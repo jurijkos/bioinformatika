@@ -1,6 +1,9 @@
 #include <iostream>
 
-int main(void) {
-    std::cout << "Hello world!" << std::endl;
-    return 0;
+#include "NeedlemanWunsch.cpp"
+
+int main(void)
+{
+  new NeedlemanWunsch();
+  return 0;
 }
