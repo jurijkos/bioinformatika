@@ -1,0 +1,4 @@
+g1.txt g2.txt
+g1.txt g3.txt
+g3.txt g4.txt
+g2.txt g4.txt
