@@ -225,6 +225,8 @@ void viterbi(char g1FileName[], char g2FileName[]) {
 
   int i = n, j = m;
   while (true) {
+	  
+    printf("%d %d (%d)\n", i, j, currentState);
     if (currentState == FROM_MM) {
       alignedX += firstGene[i-1];
       alignedY += secondGene[j-1];
@@ -242,6 +244,7 @@ void viterbi(char g1FileName[], char g2FileName[]) {
       j--;
     } else {
       std::cout << "ERROR: BACK TRACE" << std::endl;
+      break;
     }
     
     if (i <= 0 && j <= 0) {
@@ -386,6 +389,7 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
 
   int i = n, j = m;
   while (true) {
+    printf("%d %d (%d)\n", i, j, currentState);
     if (currentState == FROM_MM) {
       alignedX += firstGene[i-1];
       alignedY += secondGene[j-1];
@@ -404,7 +408,6 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
     } else {
      // std::cout << "ERROR: BACK TRACE" << std::endl;
     }
-    
     if (i <= 0 && j <= 0) {
       break;
     }
