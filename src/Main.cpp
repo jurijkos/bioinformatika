@@ -4,29 +4,35 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <iomanip>
+#include <stdio.h>
+#include <bits/stdc++.h> 
+#include <cmath>
 //#include "NeedlemanWunsch.h"
 
 #define GET_INDEX(i, j, m) ((i) * (m) + (j)) 
 #define FROM_MM 1
 #define FROM_EX 2
 #define FROM_EY 3
-/*
-double transmissionMatrix[5][5] = {
-  { 0.0, 0.625, 0.375,   0.0,   0.0 },
-  { 0.0, 0.312, 0.0625,  0.5,   0.125 },
-  { 0.0, 0.083, 0.25,    0.583, 0.083 },
-  { 0.0, 0.25,  0.224,   0.48,  0.034 },
-  { 0.0, 0.0,   0.0,     0.0,   0.0 }        
-};
-double emissionMatrix[5][5] = {
-  {0.,         0.21875,    0.46875,    0.3125    , 0.0},
-  {0.29166667, 0.32758621, 0.,         0.        , 0.0},
-  {0.45833333, 0.,         0.5,        0.        , 0.0},
-  {0.25,       0.,         0.,         0.17241379, 0.0},
-  {0.25,       0.,         0.,         0.17241379, 0.0}
-};
-*/
 
+double transmissionMatrix[5][5] = {
+ {0.        ,0.16324153,0.70367022,0.13308825,0.        },
+ {0.        ,0.24061506,0.25119354,0.38537014,0.12282125},
+ {0.        ,0.2485594 ,0.37534149,0.35442674,0.02167237},
+ {0.        ,0.26130111,0.42213701,0.30572308,0.0108388 },
+ {0.        ,0.        ,0.        ,0.        ,0.        }
+ };
+
+
+double emissionMatrix[5][5] = {
+ {0.        ,0.25993764,0.15561077,0.5255119 ,0.05893969},
+ {0.23525022,0.14544823,0.02395958,0.02000951,0.01412214},
+ {0.27924401,0.01898803,0.17671419,0.03698476,0.00154984},
+ {0.0808479 ,0.00125295,0.00399033,0.29688447,0.00110199},
+ {0.40465787,0.02299597,0.00523322,0.023001  ,0.20776378}
+ };
+
+/*
 double transmissionMatrix[5][5] = {
   { 0.0, 1 /3.0,   2/3.0,  0.0,   0.0 },
   { 0.0, 2/8.0,   1/8.0,  4/8.0,   1/8.0 },
@@ -41,6 +47,7 @@ double emissionMatrix[5][5] = {
   {2/9.0, 1/32.0, 1/32.0, 5/32.0,  1/32.0},
   {3/9.0, 1/32.0, 1/32.0, 1/32.0,  5/32.0}
 };
+*/
 
 double** allocateDouble2D(int n, int m) {
   double **matrix = new double*[n];
@@ -82,29 +89,39 @@ int getIndexOfBase(char c) {
 void pm(double **matrix, int n, int m) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      std::cout << matrix[i][j] << " ";
+      printf("%9.6f", matrix[i][j]);
     }
     std::cout << "\n";
   }
   std::cout << "\n\n\n";
 }
 
-void printRevers(std::string &string) {
-  for (int i = string.size() - 1; i >=0; i--) {
-    std::cout << string[i];
+void ptm(char **matrix, int n, int m) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%3d", matrix[i][j]);
+    }
+    std::cout << "\n";
   }
-  std::cout << "\n";
+  std::cout << "\n\n\n";
 }
 
-void viterbi() {
-  
+//ispisuje matrice dinamike i trace zajedno
+void pbm(double **mat, char **t, int n, int m) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%9.6f(%d)", mat[i][j], t[i][j]);
+    }
+    std::cout << "\n";
+  }
+  std::cout << "\n\n\n";
+}
 
-  std::ifstream infile1("g1.txt");
-  std::ifstream infile2("g2.txt");
-
+void viterbi(char g1FileName[], char g2FileName[]) {
+  std::ifstream infile1(g1FileName);
+  std::ifstream infile2(g2FileName);
 
   std::string firstGene;
-  std::cout << "jurij" << std::endl;
   std::string line;
   while (std::getline(infile1, line)) {
     firstGene += line;
@@ -137,10 +154,11 @@ void viterbi() {
   //pm(withEmitY, n + 1, m + 1);
 
   
-  for (int i = 1; i <= 1; i++) {
+  for (int i = 1; i <= n; i++) {
     for (int j = 1; j <= m; j++) {
         char x = firstGene[i - 1];
         char y = secondGene[j - 1];
+        
         double pxy = emissionMatrix[getIndexOfBase(x)][getIndexOfBase(y)];
         double qx = emissionMatrix[getIndexOfBase(x)][0];
         double qy = emissionMatrix[0][getIndexOfBase(y)];
@@ -148,7 +166,7 @@ void viterbi() {
         double wasMM = transmissionMatrix[3][3] * withMM[i - 1][j - 1];
         double wasEmitX = transmissionMatrix[2][3] * withEmitX[i - 1][j - 1];
         double wasEmitY = transmissionMatrix[1][3] * withEmitY[i - 1][j - 1];
-        std::cout << "was: " << wasMM << " " << wasEmitX << " " << wasEmitY << std::endl; 
+        
         if (wasMM > wasEmitX && wasMM > wasEmitY) {
           withMM[i][j] = pxy *wasMM;
           traceMM[i][j] =  FROM_MM; 
@@ -163,7 +181,7 @@ void viterbi() {
         //emit in x
         wasMM = transmissionMatrix[3][2] * withMM[i - 1][j];
         wasEmitX = transmissionMatrix[2][2] * withEmitX[i - 1][j];
-        
+        if (i==1 && j == 2) std::cout << wasMM << std::endl;
         if (wasMM > wasEmitX) {
           withEmitX[i][j] = qx *wasMM;
           traceX[i][j] =  FROM_MM; 
@@ -184,15 +202,9 @@ void viterbi() {
           withEmitY[i][j] = qy * wasEmitY;
           traceY[i][j] = FROM_EY;
         }
-
-
     }
-    pm(withMM, n + 1, m + 1);
-    pm(withEmitX, n + 1, m + 1);
-    pm(withEmitY, n + 1, m + 1);
-  }
-  
-/*
+  }  
+
   // backtrace
   std::string alignedX;
   std::string alignedY;
@@ -209,41 +221,193 @@ void viterbi() {
   } else {
     currentState = FROM_EY;
   }
+  //printf("%d\n", currentState);
 
   int i = n, j = m;
   while (true) {
-    
     if (currentState == FROM_MM) {
-      alignedX += firstGene[i];
-      alignedY += secondGene[j];
+      alignedX += firstGene[i-1];
+      alignedY += secondGene[j-1];
       currentState = traceMM[i][j];
       i--; j--;
     } else if (currentState == FROM_EX) {
-      alignedX += firstGene[i];
+      alignedX += firstGene[i-1];
       alignedY += '-';
       currentState = traceX[i][j];
       i--;
     } else if (currentState == FROM_EY) {
       alignedX += '-';
-      alignedY += secondGene[j];
+      alignedY += secondGene[j-1];
       currentState = traceY[i][j];
       j--;
     } else {
       std::cout << "ERROR: BACK TRACE" << std::endl;
     }
-
+    
     if (i <= 0 && j <= 0) {
       break;
     }
   }
-  */
   
- 
+  reverse(alignedX.begin(), alignedX.end());
+  reverse(alignedY.begin(), alignedY.end());
+  std::cout << alignedX << std::endl;
+  std::cout << alignedY << std::endl;
 }
 
-int main(void)
+void proba_to_log(double *mat, int n, int m) {
+	 for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+	
+			if (fabs(*(mat+ i*m + n)) < 10e-5) *(mat+ i*m + n) = -INFINITY;
+			else *(mat+ i*m + n) = std::log(*(mat+ i*m + n));
+		}
+	}
+}
+
+void viterbi_log(char g1FileName[], char g2FileName[]) {
+  std::ifstream infile1(g1FileName);
+  std::ifstream infile2(g2FileName);
+
+  std::string firstGene;
+  std::string line;
+  while (std::getline(infile1, line)) {
+    firstGene += line;
+  }
+
+  std::string secondGene;
+  while (std::getline(infile2, line)) {
+    secondGene += line;
+  }
+
+  std::cout << "1: " << firstGene << std::endl;
+  std::cout << "2: " << secondGene << std::endl;
+  
+  int n = firstGene.size();
+  int m = secondGene.size();
+  std::cout << "n: " << n << " m: " << m << std::endl;
+  
+  double **withMM = allocateDouble2D(n + 1, m + 1);
+  double **withEmitX = allocateDouble2D(n + 1, m + 1);
+  double **withEmitY = allocateDouble2D(n + 1, m + 1);
+
+  char **traceMM = allocateChar2D(n + 1, m + 1);
+  char **traceX = allocateChar2D(n + 1, m + 1);
+  char **traceY = allocateChar2D(n + 1, m + 1);
+  
+  withMM[0][0] = 1;
+  // alociraj pocetno stanje 
+  
+  proba_to_log((double *)transmissionMatrix, 5,5);
+  proba_to_log((double *)emissionMatrix, 5,5);
+  proba_to_log((double *)withMM, n+1, m+1);
+  proba_to_log((double *)withEmitX, n+1, m+1);
+  proba_to_log((double *)withEmitY, n+1, m+1);
+  
+  for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= m; j++) {
+        char x = firstGene[i - 1];
+        char y = secondGene[j - 1];
+        
+        double pxy = emissionMatrix[getIndexOfBase(x)][getIndexOfBase(y)];
+        double qx = emissionMatrix[getIndexOfBase(x)][0];
+        double qy = emissionMatrix[0][getIndexOfBase(y)];
+        std::cout << pxy << std::endl;
+        double wasMM = transmissionMatrix[3][3] + withMM[i - 1][j - 1];
+        double wasEmitX = transmissionMatrix[2][3] + withEmitX[i - 1][j - 1];
+        double wasEmitY = transmissionMatrix[1][3] + withEmitY[i - 1][j - 1];
+        
+        if (wasMM > wasEmitX && wasMM > wasEmitY) {
+          withMM[i][j] = pxy + wasMM;
+          traceMM[i][j] =  FROM_MM; 
+        } else if (wasEmitX > wasMM && wasEmitX > wasEmitY) {
+          withMM[i][j] = pxy + wasEmitX;
+          traceMM[i][j] =  FROM_EX;
+        } else {
+          withMM[i][j] = pxy + wasEmitY;
+          traceMM[i][j] = FROM_EY;
+        }
+
+        //emit in x
+        wasMM = transmissionMatrix[3][2] + withMM[i - 1][j];
+        wasEmitX = transmissionMatrix[2][2] + withEmitX[i - 1][j];
+        if (i==1 && j == 2) std::cout << wasMM << std::endl;
+        if (wasMM > wasEmitX) {
+          withEmitX[i][j] = qx + wasMM;
+          traceX[i][j] =  FROM_MM; 
+        } else {
+          withEmitX[i][j] = qx + wasEmitX;
+          traceX[i][j] = FROM_EX;
+        }
+
+        
+        //emit in y
+        wasMM = transmissionMatrix[3][1] + withMM[i][j - 1];
+        wasEmitY = transmissionMatrix[1][1] + withEmitY[i][j - 1];
+        
+        if (wasMM > wasEmitY) {
+          withEmitY[i][j] = qy + wasMM;
+          traceY[i][j] =  FROM_MM; 
+        } else {
+          withEmitY[i][j] = qy + wasEmitY;
+          traceY[i][j] = FROM_EY;
+        }
+    }
+  }  
+
+  // backtrace
+  std::string alignedX;
+  std::string alignedY;
+  
+  char currentState;
+  double wasMM = transmissionMatrix[3][4] + withMM[n][m];
+  double wasEmitX = transmissionMatrix[2][4] + withEmitX[n][m];
+  double wasEmitY = transmissionMatrix[1][4] + withEmitY[n][m];
+
+  if (wasMM > wasEmitX && wasMM > wasEmitY) {
+    currentState = FROM_MM;
+  } else if (wasEmitX > wasMM && wasEmitX > wasEmitY) {
+    currentState = FROM_EX;
+  } else {
+    currentState = FROM_EY;
+  }
+  //printf("%d\n", currentState);
+
+  int i = n, j = m;
+  while (true) {
+    if (currentState == FROM_MM) {
+      alignedX += firstGene[i-1];
+      alignedY += secondGene[j-1];
+      currentState = traceMM[i][j];
+      i--; j--;
+    } else if (currentState == FROM_EX) {
+      alignedX += firstGene[i-1];
+      alignedY += '-';
+      currentState = traceX[i][j];
+      i--;
+    } else if (currentState == FROM_EY) {
+      alignedX += '-';
+      alignedY += secondGene[j-1];
+      currentState = traceY[i][j];
+      j--;
+    } else {
+     // std::cout << "ERROR: BACK TRACE" << std::endl;
+    }
+    
+    if (i <= 0 && j <= 0) {
+      break;
+    }
+  }
+  
+  reverse(alignedX.begin(), alignedX.end());
+  reverse(alignedY.begin(), alignedY.end());
+  std::cout << alignedX << std::endl;
+  std::cout << alignedY << std::endl;
+}
+
+int main(int argc, char *argv[])
 {
-  viterbi();
+  viterbi(argv[1],argv[2]);
   //new NeedlemanWunsch();
   //std::cout << std::max({1, 3, 4}) << std::endl;
 
