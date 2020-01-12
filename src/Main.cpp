@@ -255,12 +255,20 @@ void viterbi(char g1FileName[], char g2FileName[]) {
   std::cout << alignedY << std::endl;
 }
 
-void proba_to_log(double *mat, int n, int m) {
-	 for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-	
-			if (fabs(*(mat+ i*m + n)) < 10e-5) *(mat+ i*m + n) = -INFINITY;
-			else *(mat+ i*m + n) = std::log(*(mat+ i*m + n));
+void proba_to_log(double p[][5]) {
+	for (int i = 0; i < 5; ++i) {
+		for(int j = 0; j < 5; ++j) {
+			if (fabs(p[i][j]) < 10e-5) p[i][j] = -INFINITY;
+			else p[i][j] = std::log(p[i][j]);
+		}
+	}
+}
+
+void to_log(double **p, int n, int m) {
+	for (int i = 0; i < n; ++i) {
+		for(int j = 0; j < m; ++j) {
+			if (fabs(p[i][j]) < 10e-5) p[i][j] = -INFINITY;
+			else p[i][j] = std::log(p[i][j]);
 		}
 	}
 }
@@ -295,14 +303,17 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
   char **traceX = allocateChar2D(n + 1, m + 1);
   char **traceY = allocateChar2D(n + 1, m + 1);
   
-  withMM[0][0] = 1;
+  
   // alociraj pocetno stanje 
   
-  proba_to_log((double *)transmissionMatrix, 5,5);
-  proba_to_log((double *)emissionMatrix, 5,5);
-  proba_to_log((double *)withMM, n+1, m+1);
-  proba_to_log((double *)withEmitX, n+1, m+1);
-  proba_to_log((double *)withEmitY, n+1, m+1);
+  proba_to_log(transmissionMatrix);
+  proba_to_log(emissionMatrix);
+  
+  //to_log() se moze hardkodirati u to -INFINITY jer su svi 0.0
+  to_log(withMM, n+1, m+1);
+  to_log(withEmitX, n+1, m+1);
+  to_log(withEmitY, n+1, m+1);
+  withMM[0][0] = 1;
   
   for (int i = 1; i <= n; i++) {
     for (int j = 1; j <= m; j++) {
@@ -312,7 +323,7 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
         double pxy = emissionMatrix[getIndexOfBase(x)][getIndexOfBase(y)];
         double qx = emissionMatrix[getIndexOfBase(x)][0];
         double qy = emissionMatrix[0][getIndexOfBase(y)];
-        std::cout << pxy << std::endl;
+        
         double wasMM = transmissionMatrix[3][3] + withMM[i - 1][j - 1];
         double wasEmitX = transmissionMatrix[2][3] + withEmitX[i - 1][j - 1];
         double wasEmitY = transmissionMatrix[1][3] + withEmitY[i - 1][j - 1];
@@ -331,7 +342,7 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
         //emit in x
         wasMM = transmissionMatrix[3][2] + withMM[i - 1][j];
         wasEmitX = transmissionMatrix[2][2] + withEmitX[i - 1][j];
-        if (i==1 && j == 2) std::cout << wasMM << std::endl;
+        
         if (wasMM > wasEmitX) {
           withEmitX[i][j] = qx + wasMM;
           traceX[i][j] =  FROM_MM; 
