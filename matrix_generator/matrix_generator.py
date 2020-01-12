@@ -5,10 +5,13 @@ from Bio import Align
 Primjer pokretanja:
 python3 matrix_generator pairs.txt 10
 '''
-emiss_i = {'-':0, 'A':1, 'B':2, 'C':3}  #mapira baze na indexe za matrice
-#emiss_i = {'-':0, 'A':1, 'C':2, 'G':3, 'T':4}
+#emiss_i = {'-':0, 'A':1, 'B':2, 'C':3}  #mapira baze na indexe za matrice
+emiss_i = {'-':0, 'A':1, 'C':2, 'G':3, 'T':4}
 emiss_matrix = np.zeros((len(emiss_i),len(emiss_i)))
-trans_matrix = np.zeros((5,5)) # 5 jer start, gap_a, gap_b, miss/match, end
+trans_matrix = np.zeros((5,5)) # 5 jer start, gap_x, gap_y, miss/match, end
+
+def generate_empty_matrices():
+	return np.zeros((len(emiss_i),len(emiss_i))), np.zeros((5,5))  #emiss, trans
 	
 def cleaned_fasta(file_name, chars_to_remove = ('x')):
 	'''
@@ -64,6 +67,26 @@ def populate_from_aligment(alignment, trans_m, emiss_m, emiss_i = emiss_i):
 		emiss_m[i1][i2] += 1			
 	trans_m[prev_state][4] += 1
 	
+def populate_from_raw_aligment(raw_1, raw_2, trans_m, emiss_m, emiss_i = emiss_i):
+	'''
+	Iz dva pojedinacna string poravnanja popunjava matrice transmisje i emisije
+	'''
+	prev_state = 0 #start | gap_a | gap_b | m (match/miss) | end
+	state = None
+	for c1, c2 in zip(raw_1, raw_2):
+		if c1 == '-':
+			state = 1
+		elif c2 == '-': 
+			state = 2
+		else: 
+			state = 3
+		trans_m[prev_state][state] += 1
+		prev_state = state
+		
+		i1 = emiss_i[c1]; i2 = emiss_i[c2]
+		emiss_m[i1][i2] += 1			
+	trans_m[prev_state][4] += 1
+	
 def proba_from_counts(trans_m, emiss_m):
 	'''
 	Matrice u kojima je biljezen broj pojava transformia u vjerojatnosne matrice.
@@ -96,13 +119,10 @@ for fn_1, fn_2 in pairs:
 	populate_from_pair(g_1, g_2, trans_matrix, emiss_matrix, N = N)
 
 
-print(trans_matrix)
-print(emiss_matrix)	
 proba_from_counts(trans_matrix, emiss_matrix)
-print(trans_matrix)
-print(emiss_matrix)	
 
-
+print(np.array2string(trans_matrix, separator=','))
+print(np.array2string(emiss_matrix, separator=','))
 
 
 

@@ -418,7 +418,7 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
 
 int main(int argc, char *argv[])
 {
-  viterbi(argv[1],argv[2]);
+  viterbi_log(argv[1],argv[2]);
   //new NeedlemanWunsch();
   //std::cout << std::max({1, 3, 4}) << std::endl;
 
