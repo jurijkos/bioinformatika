@@ -163,6 +163,8 @@ void viterbi(char g1FileName[], char g2FileName[]) {
         double qx = emissionMatrix[getIndexOfBase(x)][0];
         double qy = emissionMatrix[0][getIndexOfBase(y)];
         
+        
+        //emit match/missmatch pair
         double wasMM = transmissionMatrix[3][3] * withMM[i - 1][j - 1];
         double wasEmitX = transmissionMatrix[2][3] * withEmitX[i - 1][j - 1];
         double wasEmitY = transmissionMatrix[1][3] * withEmitY[i - 1][j - 1];

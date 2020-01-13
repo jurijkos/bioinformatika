@@ -1,9 +1,15 @@
+#!/usr/bin/env python3
+
 import sys
 import numpy as np
 from Bio import Align
 '''
 Primjer pokretanja:
-python3 matrix_generator pairs.txt 10
+-sam gradi poravnanja od parova gena
+python3 matrix_generator -g gene_pairs.txt 10
+
+-poravnanja predana u datoteci
+python3 matrix_generator -a algnmt_pairs.txt
 '''
 #emiss_i = {'-':0, 'A':1, 'B':2, 'C':3}  #mapira baze na indexe za matrice
 emiss_i = {'-':0, 'A':1, 'C':2, 'G':3, 'T':4}
@@ -48,7 +54,7 @@ def populate_from_aligment(alignment, trans_m, emiss_m, emiss_i = emiss_i):
 	'''
 	s_algmnt = alignment.format()
 	algmnt_len = len(s_algmnt)//3-1
-	prev_state = 0 #start | gap_a | gap_b | m (match/miss) | end
+	prev_state = 0 #start | gap_a/emit_y | gap_b/emit_x | m (match/miss) | end
 	state = None
 	for i in range(algmnt_len):
 		c1 = s_algmnt[i]
@@ -103,26 +109,40 @@ def proba_from_counts(trans_m, emiss_m):
 	emiss_matrix[:,0] /= gap_b_sum
 	emiss_matrix[1:,1:] /= mm_sum
 
-#iz datoteke zadane preko komandne linije ucitava parove iz kojih ce se graditi matrice
+
+mode = 0 if sys.argv[1] == '-g' else 1
 pairs = []
-config_file_name = sys.argv[1]
-N = int(sys.argv[2])
+config_file_name = sys.argv[2]
 with open(config_file_name, 'r') as config_file:
 	for line in config_file.readlines():
 		pairs.append(line.split())
+		
+		
+#iz datoteke zadane preko komandne linije ucitava parove iz kojih ce se graditi matrice
+if mode == 0:
+	N = int(sys.argv[3])
+	#iterira po parovima i popunjava tablice
+	for fn_1, fn_2 in pairs:
+		g_1 = cleaned_fasta(fn_1)
+		g_2 = cleaned_fasta(fn_2)
+		populate_from_pair(g_1, g_2, trans_matrix, emiss_matrix, N = N)
 
-#iterira po parovima i popunjava tablice
-for fn_1, fn_2 in pairs:
-	g_1 = cleaned_fasta(fn_1)
-	g_2 = cleaned_fasta(fn_2)
+#popunjava tablice iz gotovog poravnanja
+else:
+	for fn_1, fn_2 in pairs:
+		g_1 = cleaned_fasta(fn_1)
+		g_2 = cleaned_fasta(fn_2)
+		populate_from_raw_aligment(g_1, g_2, trans_matrix, emiss_matrix)
 	
-	populate_from_pair(g_1, g_2, trans_matrix, emiss_matrix, N = N)
-
-
 proba_from_counts(trans_matrix, emiss_matrix)
 
-print(np.array2string(trans_matrix, separator=','))
-print(np.array2string(emiss_matrix, separator=','))
+formating = {	
+				'separator' : ',', \
+				'formatter' : {'float' : (lambda x : '{:0.5f}'.format(x))}
+			}
+print(np.array2string(trans_matrix, **formating).replace('[', '{').replace(']', '}'))
+print()
+print(np.array2string(emiss_matrix, **formating).replace('[', '{').replace(']', '}'))
 
 
 
