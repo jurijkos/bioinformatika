@@ -1,4 +1,5 @@
 #include <iostream>
+#include "HMMAlign.h"
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -8,47 +9,18 @@
 #include <stdio.h>
 #include <bits/stdc++.h> 
 #include <cmath>
-#include "HMMAlign.h"
-#define GET_INDEX(i, j, m) ((i) * (m) + (j)) 
+
 #define FROM_MM 1
 #define FROM_EX 2
 #define FROM_EY 3
-/*
-double transmissionMatrix[5][5] = {
- {0.        ,0.16324153,0.70367022,0.13308825,0.        },
- {0.        ,0.24061506,0.25119354,0.38537014,0.12282125},
- {0.        ,0.2485594 ,0.37534149,0.35442674,0.02167237},
- {0.        ,0.26130111,0.42213701,0.30572308,0.0108388 },
- {0.        ,0.        ,0.        ,0.        ,0.        }
- };
+
+void HMMAlign::print() {
+    std::cout << "hello" << std::endl;
+}
 
 
-double emissionMatrix[5][5] = {
- {0.        ,0.25993764,0.15561077,0.5255119 ,0.05893969},
- {0.23525022,0.14544823,0.02395958,0.02000951,0.01412214},
- {0.27924401,0.01898803,0.17671419,0.03698476,0.00154984},
- {0.0808479 ,0.00125295,0.00399033,0.29688447,0.00110199},
- {0.40465787,0.02299597,0.00523322,0.023001  ,0.20776378}
- };
-*/
 
-double transmissionMatrix[5][5] = {
-  { 0.0, 1 /3.0,   2/3.0,  0.0,   0.0 },
-  { 0.0, 2/8.0,   1/8.0,  4/8.0,   1/8.0 },
-  { 0.0, 1/7.0,   3/7.0,  2/7.0,   1/7.0},
-  { 0.0, 3/10.0,  2/10.0, 4/10.0,  1/10.0 },
-  { 0.0, 0.0,   0.0,  0.0,   0.0 }        
-};
-double emissionMatrix[5][5] = {
-  {0.0,  2/7.0,  2/7.0,  1/7.0,   2/7.0},
-  {1/9.0, 5/32.0, 5/32.0, 1/32.0,  1/32.0},
-  {3/9.0, 1/32.0, 1/32.0, 4/32.0,  1/32.0},
-  {2/9.0, 1/32.0, 1/32.0, 2/32.0,  1/32.0},
-  {3/9.0, 1/32.0, 1/32.0, 1/32.0,  5/32.0}
-};
-
-
-double** allocateDouble2D(int n, int m) {
+double** HMMAlign::allocateDouble2D(int n, int m) {
   double **matrix = new double*[n];
   for (int i = 0; i < n; i++) {
     matrix[i] = new double[m];
@@ -61,7 +33,7 @@ double** allocateDouble2D(int n, int m) {
   return matrix;
 }
 
-char** allocateChar2D(int n, int m) {
+char** HMMAlign::allocateChar2D(int n, int m) {
   char **matrix = new char*[n];
   for (int i = 0; i < n; i++) {
     matrix[i] = new char[m];
@@ -69,7 +41,7 @@ char** allocateChar2D(int n, int m) {
   return matrix;
 }
 
-int getIndexOfBase(char c) {
+int HMMAlign::getIndexOfBase(char c) {
   switch (c) {
     case '-':
       return 0;
@@ -85,7 +57,7 @@ int getIndexOfBase(char c) {
   return -1;
 }
 
-void pm(double **matrix, int n, int m) {
+void HMMAlign::pm(double **matrix, int n, int m) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       printf("%9.6f", matrix[i][j]);
@@ -95,7 +67,7 @@ void pm(double **matrix, int n, int m) {
   std::cout << "\n\n\n";
 }
 
-void ptm(char **matrix, int n, int m) {
+void HMMAlign::ptm(char **matrix, int n, int m) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       printf("%3d", matrix[i][j]);
@@ -106,7 +78,7 @@ void ptm(char **matrix, int n, int m) {
 }
 
 //ispisuje matrice dinamike i trace zajedno
-void pbm(double **mat, char **t, int n, int m) {
+void HMMAlign::pbm(double **mat, char **t, int n, int m) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
       printf("%9.6f(%d)", mat[i][j], t[i][j]);
@@ -116,7 +88,7 @@ void pbm(double **mat, char **t, int n, int m) {
   std::cout << "\n\n\n";
 }
 
-void proba_to_log(double p[][5]) {
+void HMMAlign::proba_to_log(double p[][5]) {
 	for (int i = 0; i < 5; ++i) {
 		for(int j = 0; j < 5; ++j) {
 			if (fabs(p[i][j]) < 10e-5) p[i][j] = -INFINITY;
@@ -125,7 +97,7 @@ void proba_to_log(double p[][5]) {
 	}
 }
 
-void to_log(double **p, int n, int m) {
+void HMMAlign::to_log(double **p, int n, int m) {
 	for (int i = 0; i < n; ++i) {
 		for(int j = 0; j < m; ++j) {
 			if (fabs(p[i][j]) < 10e-5) p[i][j] = -INFINITY;
@@ -134,7 +106,7 @@ void to_log(double **p, int n, int m) {
 	}
 }
 
-void viterbi_log(char g1FileName[], char g2FileName[]) {
+void HMMAlign::viterbi_log(char g1FileName[], char g2FileName[]) {
   std::ifstream infile1(g1FileName);
   std::ifstream infile2(g2FileName);
 
@@ -283,16 +255,3 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
   //std::cout << alignedX << std::endl;
   //std::cout << alignedY << std::endl;
 }
-
-int main(int argc, char *argv[])
-{
-  //viterbi_log(argv[1],argv[2]);
-  //new NeedlemanWunsch();
-  //std::cout << std::max({1, 3, 4}) << std::endl;
-
-  HMMAlign align;
-  //align.print();
-  align.viterbi_log(argv[1], argv[2]);
-  return 0;
-}
-
