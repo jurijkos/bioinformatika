@@ -6,6 +6,7 @@
 class HMMAlign {
 public:
   HMMAlign(std::string firstGene, std::string secondGene, double transmissionMatrix[5][5], double emissionMatrix[5][5]);
+  ~HMMAlign();
   void print();
   void run();
 private:
@@ -14,7 +15,9 @@ private:
   void dataPreprocessing();
   int getIndexOfBase(char c);
   double** allocateDouble2D(int n, int m);
+  void emptyDouble2D(double **matrix, int n);
   char** allocateChar2D(int n, int m);
+  void emptyChar2D(char **matrix, int n);
   void proba_to_log(double p[][5]);
   void to_log(double **p, int n, int m);
   void setInFile1(std::string inFile);

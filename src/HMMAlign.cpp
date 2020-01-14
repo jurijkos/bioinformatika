@@ -25,6 +25,15 @@ HMMAlign::HMMAlign(std::string firstGene, std::string secondGene, double transmi
   std::memcpy(this->emissionMatrix, emissionMatrix, 25 * sizeof(double));
 }
 
+HMMAlign::~HMMAlign() {
+  emptyDouble2D(withMM, n + 1);
+  emptyDouble2D(withEmitX, n + 1);
+  emptyDouble2D(withEmitY, n + 1);
+  emptyChar2D(traceMM, n + 1);
+  emptyChar2D(traceX, n + 1);
+  emptyChar2D(traceY, n + 1);
+}
+
 double** HMMAlign::allocateDouble2D(int n, int m) {
   double **matrix = new double*[n];
   for (int i = 0; i < n; i++) {
@@ -198,4 +207,16 @@ void HMMAlign::run() {
   printSolution();
 }
 
+void HMMAlign::emptyDouble2D(double **matrix, int n) {
+  for (int i = 0; i < n; i++) {
+    delete[] matrix[i];
+  }
+  delete[] matrix;
+}
 
+void HMMAlign::emptyChar2D(char **matrix, int n) {
+  for (int i = 0; i < n; i++) {
+    delete[] matrix[i];
+  }
+  delete[] matrix;
+}
