@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include <chrono>
 #include "HMMAlign.h"
 
 double transmissionMatrix[5][5] = {
@@ -81,26 +82,20 @@ int main(int argc, char *argv[]) {
   if (emiss) {
     fillEmissionMatrix(emissionFilename);
   }
-  for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 5; j++) {
-      std::cout << emissionMatrix[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
-
+  
   if (trans) {
     fillTransmissionMatrix(transFilename);
   }
 
-  for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 5; j++) {
-      std::cout << transmissionMatrix[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
 
+	
   HMMAlign align(getGene(argv[optind]), getGene(argv[optind + 1]), transmissionMatrix, emissionMatrix);
+  auto t1 = std::chrono::high_resolution_clock::now();
   align.run();
+  auto t2 = std::chrono::high_resolution_clock::now();
+
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  std::cout << "Trajanje izvodjena: " << duration << "ms"<< std::endl;
   return 0;
 }
 

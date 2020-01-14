@@ -103,7 +103,6 @@ void HMMAlign::backtrace() {
   
   int i = n, j = m;
   while (true) {
-    printf("%d %d (%d)\n", i, j, currentState);
     if (currentState == FROM_MM) {
       alignedX += firstGene[i-1];
       alignedY += secondGene[j-1];
