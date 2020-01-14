@@ -20,7 +20,6 @@ private:
   void setInFile1(std::string inFile);
   void setInFile2(std::string inFile);
   void printSolution();
-  double x[];
   double transmissionMatrix[5][5];
   double emissionMatrix[5][5];
 

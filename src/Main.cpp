@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <unistd.h>
 #include "HMMAlign.h"
 
@@ -30,16 +31,47 @@ std::string getGene(std::string fileName) {
   return gene;
 }
 
+void fillEmissionMatrix(std::string fileName) {
+  std::ifstream infile(fileName);
+  std::string line;
+  int i = 0;
+  while (std::getline(infile, line)) {
+    std::stringstream ss(line);
+    for (int j = 0; j < 5; j++) {
+      ss >> emissionMatrix[i][j];
+    }
+    i++;
+  }
+}
+
+void fillTransmissionMatrix(std::string fileName) {
+  std::ifstream infile(fileName);
+  std::string line;
+  int i = 0;
+  while (std::getline(infile, line)) {
+    std::stringstream ss(line);
+    for (int j = 0; j < 5; j++) {
+      ss >> transmissionMatrix[i][j];
+    }
+    i++;
+  }
+}
+
+
 int main(int argc, char *argv[]) {
   char ch;
+  std::string emissionFilename;
+  std::string transFilename;
   int emiss = 0, trans = 0;
-  while ((ch = getopt(argc, argv, "et")) != -1) {
+  while ((ch = getopt(argc, argv, "e:t:")) != -1) {
     switch (ch) {
       case 'e':
         emiss = 1;
+        emissionFilename = optarg;
         break;
       case 't':
         trans = 1;
+        transFilename = optarg;
         break;
       default:
         printf("Kriva opcija\n");
@@ -47,12 +79,26 @@ int main(int argc, char *argv[]) {
     }        
   }
   if (emiss) {
-    std::cout << "emissionMatrix" << std::endl;
+    fillEmissionMatrix(emissionFilename);
+  }
+  for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
+      std::cout << emissionMatrix[i][j] << " ";
+    }
+    std::cout << std::endl;
   }
 
   if (trans) {
-    std::cout << "trans" << std::endl;
+    fillTransmissionMatrix(transFilename);
   }
+
+  for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
+      std::cout << transmissionMatrix[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
+
   HMMAlign align(getGene(argv[optind]), getGene(argv[optind + 1]), transmissionMatrix, emissionMatrix);
   align.run();
   return 0;

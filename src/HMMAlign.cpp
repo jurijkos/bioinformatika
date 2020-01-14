@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <iomanip>
 #include <stdio.h>
-#include <bits/stdc++.h> 
+//#include <bits/stdc++.h> 
+#include <cstring>
 #include <cmath>
 #include "HMMAlign.h"
 
