@@ -64,8 +64,6 @@ def populate_from_aligment(alignment, trans_m, emiss_m, emiss_i = emiss_i):
 		c1 = s_algmnt[i]
 		c2 = s_algmnt[i+(algmnt_len+1)*2]
 		
-		if c1 == '-' and c2 == '-':
-			continue
 			
 		if c1 == '-':
 			state = 1
@@ -87,6 +85,9 @@ def populate_from_raw_aligment(raw_1, raw_2, trans_m, emiss_m, emiss_i = emiss_i
 	prev_state = 0 #start | gap_a | gap_b | m (match/miss) | end
 	state = None
 	for c1, c2 in zip(raw_1, raw_2):
+		if c1 == '-' and c2 == '-':
+			continue
+			
 		if c1 == '-':
 			state = 1
 		elif c2 == '-': 
@@ -111,7 +112,7 @@ def proba_from_counts(trans_m, emiss_m):
 	
 	gap_a_sum = emiss_matrix[0,:].sum()
 	gap_b_sum = emiss_matrix[:,0].sum()
-	mm_sum = emiss_matrix[1:,1:].sum()
+	mm_sum = emiss_matrix.sum() - gap_a_sum - gap_b_sum
 	emiss_matrix[0,:] /= gap_a_sum
 	emiss_matrix[:,0] /= gap_b_sum
 	emiss_matrix[1:,1:] /= mm_sum
@@ -158,7 +159,7 @@ tm_file = open("../data/tran_mat.txt", 'w')
 tm_file.write(np.array2string(trans_matrix, **formating).replace('[', '').replace(']', ''))
 tm_file.close()
 
-em_file = open("../data/tran_mat.txt", 'w')
+em_file = open("../data/emis_mat.txt", 'w')
 em_file.write(np.array2string(emiss_matrix, **formating).replace('[', '').replace(']', ''))
 em_file.close()
 
