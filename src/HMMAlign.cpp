@@ -10,11 +10,8 @@
 #include <cmath>
 #include "HMMAlign.h"
 
-#define FROM_MM 1
-#define FROM_EX 2
-#define FROM_EY 3
 
-HMMAlign::HMMAlign(std::string firstGene, std::string secondGene) : firstGene(firstGene), secondGene(secondGene) {
+HMMAlign::HMMAlign(std::string firstGene, std::string secondGene, double transmissionMatrix[5][5], double emissionMatrix[5][5]) : firstGene(firstGene), secondGene(secondGene) {
   n = firstGene.size();
   m = secondGene.size();
   withMM = allocateDouble2D(n + 1, m + 1);
@@ -23,6 +20,8 @@ HMMAlign::HMMAlign(std::string firstGene, std::string secondGene) : firstGene(fi
   traceMM = allocateChar2D(n + 1, m + 1);
   traceX = allocateChar2D(n + 1, m + 1);
   traceY = allocateChar2D(n + 1, m + 1);
+  std::memcpy(this->transmissionMatrix, transmissionMatrix, 25 * sizeof(double));
+  std::memcpy(this->emissionMatrix, emissionMatrix, 25 * sizeof(double));
 }
 
 double** HMMAlign::allocateDouble2D(int n, int m) {
@@ -100,8 +99,7 @@ void HMMAlign::backtrace() {
   } else {
     currentState = FROM_EY;
   }
-  //printf("%d\n", currentState);
-
+  
   int i = n, j = m;
   while (true) {
     printf("%d %d (%d)\n", i, j, currentState);
