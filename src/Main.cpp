@@ -14,7 +14,7 @@
 #define FROM_MM 1
 #define FROM_EX 2
 #define FROM_EY 3
-
+/*
 double transmissionMatrix[5][5] = {
  {0.        ,0.16324153,0.70367022,0.13308825,0.        },
  {0.        ,0.24061506,0.25119354,0.38537014,0.12282125},
@@ -31,8 +31,8 @@ double emissionMatrix[5][5] = {
  {0.0808479 ,0.00125295,0.00399033,0.29688447,0.00110199},
  {0.40465787,0.02299597,0.00523322,0.023001  ,0.20776378}
  };
+*/
 
-/*
 double transmissionMatrix[5][5] = {
   { 0.0, 1 /3.0,   2/3.0,  0.0,   0.0 },
   { 0.0, 2/8.0,   1/8.0,  4/8.0,   1/8.0 },
@@ -42,12 +42,12 @@ double transmissionMatrix[5][5] = {
 };
 double emissionMatrix[5][5] = {
   {0.0,  2/7.0,  2/7.0,  1/7.0,   2/7.0},
-  {1/9.0, 5/32.0, 1/32.0, 1/32.0,  1/32.0},
-  {3/9.0, 1/32.0, 5/32.0, 1/32.0,  1/32.0},
-  {2/9.0, 1/32.0, 1/32.0, 5/32.0,  1/32.0},
+  {1/9.0, 5/32.0, 5/32.0, 1/32.0,  1/32.0},
+  {3/9.0, 1/32.0, 1/32.0, 4/32.0,  1/32.0},
+  {2/9.0, 1/32.0, 1/32.0, 2/32.0,  1/32.0},
   {3/9.0, 1/32.0, 1/32.0, 1/32.0,  5/32.0}
 };
-*/
+
 
 double** allocateDouble2D(int n, int m) {
   double **matrix = new double*[n];
@@ -417,8 +417,15 @@ void viterbi_log(char g1FileName[], char g2FileName[]) {
   
   reverse(alignedX.begin(), alignedX.end());
   reverse(alignedY.begin(), alignedY.end());
-  std::cout << alignedX << std::endl;
-  std::cout << alignedY << std::endl;
+
+  for (int i = 0; i < alignedX.size(); i = i + 100) {
+    std::cout << std::string(alignedX, i, 100) << std::endl;
+    std::cout << std::string(alignedY, i, 100) << std::endl;
+    std::cout << "\n\n";
+  }
+
+  //std::cout << alignedX << std::endl;
+  //std::cout << alignedY << std::endl;
 }
 
 int main(int argc, char *argv[])
