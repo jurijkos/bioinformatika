@@ -1,4 +1,4 @@
-# Pairwise alignment using Hidden Markov Models(Group /) - Bionformatics
+# Pairwise alignment using Hidden Markov Models(Group 7) - Bionformatics
 
 Project for Bioinformatics course at FER, University of Zagreb.
 
