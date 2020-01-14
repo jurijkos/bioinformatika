@@ -1,0 +1,6 @@
+rg1.txt rg2.txt
+rg1.txt rg3.txt
+rg3.txt rg2.txt
+rg1.txt rg4.txt
+rg3.txt rg4.txt
+rg2.txt rg4.txt
