@@ -1,5 +1,4 @@
 #include <iostream>
-#include "HMMAlign.h"
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -9,27 +8,29 @@
 #include <stdio.h>
 #include <bits/stdc++.h> 
 #include <cmath>
+#include "HMMAlign.h"
 
 #define FROM_MM 1
 #define FROM_EX 2
 #define FROM_EY 3
 
-void HMMAlign::print() {
-    std::cout << "hello" << std::endl;
+HMMAlign::HMMAlign(std::string firstGene, std::string secondGene) : firstGene(firstGene), secondGene(secondGene) {
+  n = firstGene.size();
+  m = secondGene.size();
+  withMM = allocateDouble2D(n + 1, m + 1);
+  withEmitX = allocateDouble2D(n + 1, m + 1);
+  withEmitY = allocateDouble2D(n + 1, m + 1);
+  traceMM = allocateChar2D(n + 1, m + 1);
+  traceX = allocateChar2D(n + 1, m + 1);
+  traceY = allocateChar2D(n + 1, m + 1);
 }
-
-
 
 double** HMMAlign::allocateDouble2D(int n, int m) {
   double **matrix = new double*[n];
   for (int i = 0; i < n; i++) {
     matrix[i] = new double[m];
-    for (int j = 0; j < m; j++) {
-      matrix[i][j] = 0.0;
-    }
+    std::memset(matrix[i], 0, sizeof(double) * m);
   }
-
-   
   return matrix;
 }
 
@@ -57,37 +58,6 @@ int HMMAlign::getIndexOfBase(char c) {
   return -1;
 }
 
-void HMMAlign::pm(double **matrix, int n, int m) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      printf("%9.6f", matrix[i][j]);
-    }
-    std::cout << "\n";
-  }
-  std::cout << "\n\n\n";
-}
-
-void HMMAlign::ptm(char **matrix, int n, int m) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      printf("%3d", matrix[i][j]);
-    }
-    std::cout << "\n";
-  }
-  std::cout << "\n\n\n";
-}
-
-//ispisuje matrice dinamike i trace zajedno
-void HMMAlign::pbm(double **mat, char **t, int n, int m) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
-      printf("%9.6f(%d)", mat[i][j], t[i][j]);
-    }
-    std::cout << "\n";
-  }
-  std::cout << "\n\n\n";
-}
-
 void HMMAlign::proba_to_log(double p[][5]) {
 	for (int i = 0; i < 5; ++i) {
 		for(int j = 0; j < 5; ++j) {
@@ -106,39 +76,7 @@ void HMMAlign::to_log(double **p, int n, int m) {
 	}
 }
 
-void HMMAlign::viterbi_log(char g1FileName[], char g2FileName[]) {
-  std::ifstream infile1(g1FileName);
-  std::ifstream infile2(g2FileName);
-
-  std::string firstGene;
-  std::string line;
-  while (std::getline(infile1, line)) {
-    firstGene += line;
-  }
-
-  std::string secondGene;
-  while (std::getline(infile2, line)) {
-    secondGene += line;
-  }
-
-  std::cout << "1: " << firstGene << std::endl;
-  std::cout << "2: " << secondGene << std::endl;
-  
-  int n = firstGene.size();
-  int m = secondGene.size();
-  std::cout << "n: " << n << " m: " << m << std::endl;
-  
-  double **withMM = allocateDouble2D(n + 1, m + 1);
-  double **withEmitX = allocateDouble2D(n + 1, m + 1);
-  double **withEmitY = allocateDouble2D(n + 1, m + 1);
-
-  char **traceMM = allocateChar2D(n + 1, m + 1);
-  char **traceX = allocateChar2D(n + 1, m + 1);
-  char **traceY = allocateChar2D(n + 1, m + 1);
-  
-  
-  // alociraj pocetno stanje 
-  
+void HMMAlign::dataPreprocessing() {
   proba_to_log(transmissionMatrix);
   proba_to_log(emissionMatrix);
   
@@ -147,7 +85,54 @@ void HMMAlign::viterbi_log(char g1FileName[], char g2FileName[]) {
   to_log(withEmitX, n+1, m+1);
   to_log(withEmitY, n+1, m+1);
   withMM[0][0] = 1;
+}
+
+void HMMAlign::backtrace() {
+  char currentState;
+  double wasMM = transmissionMatrix[3][4] + withMM[n][m];
+  double wasEmitX = transmissionMatrix[2][4] + withEmitX[n][m];
+  double wasEmitY = transmissionMatrix[1][4] + withEmitY[n][m];
+
+  if (wasMM > wasEmitX && wasMM > wasEmitY) {
+    currentState = FROM_MM;
+  } else if (wasEmitX > wasMM && wasEmitX > wasEmitY) {
+    currentState = FROM_EX;
+  } else {
+    currentState = FROM_EY;
+  }
+  //printf("%d\n", currentState);
+
+  int i = n, j = m;
+  while (true) {
+    printf("%d %d (%d)\n", i, j, currentState);
+    if (currentState == FROM_MM) {
+      alignedX += firstGene[i-1];
+      alignedY += secondGene[j-1];
+      currentState = traceMM[i][j];
+      i--; j--;
+    } else if (currentState == FROM_EX) {
+      alignedX += firstGene[i-1];
+      alignedY += '-';
+      currentState = traceX[i][j];
+      i--;
+    } else if (currentState == FROM_EY) {
+      alignedX += '-';
+      alignedY += secondGene[j-1];
+      currentState = traceY[i][j];
+      j--;
+    } else {
+     // std::cout << "ERROR: BACK TRACE" << std::endl;
+    }
+    if (i <= 0 && j <= 0) {
+      break;
+    }
+  }
   
+  reverse(alignedX.begin(), alignedX.end());
+  reverse(alignedY.begin(), alignedY.end());
+}
+
+void HMMAlign::viterbi_log() {
   for (int i = 1; i <= n; i++) {
     for (int j = 1; j <= m; j++) {
         char x = firstGene[i - 1];
@@ -198,60 +183,21 @@ void HMMAlign::viterbi_log(char g1FileName[], char g2FileName[]) {
         }
     }
   }  
+}
 
-  // backtrace
-  std::string alignedX;
-  std::string alignedY;
-  
-  char currentState;
-  double wasMM = transmissionMatrix[3][4] + withMM[n][m];
-  double wasEmitX = transmissionMatrix[2][4] + withEmitX[n][m];
-  double wasEmitY = transmissionMatrix[1][4] + withEmitY[n][m];
-
-  if (wasMM > wasEmitX && wasMM > wasEmitY) {
-    currentState = FROM_MM;
-  } else if (wasEmitX > wasMM && wasEmitX > wasEmitY) {
-    currentState = FROM_EX;
-  } else {
-    currentState = FROM_EY;
-  }
-  //printf("%d\n", currentState);
-
-  int i = n, j = m;
-  while (true) {
-    printf("%d %d (%d)\n", i, j, currentState);
-    if (currentState == FROM_MM) {
-      alignedX += firstGene[i-1];
-      alignedY += secondGene[j-1];
-      currentState = traceMM[i][j];
-      i--; j--;
-    } else if (currentState == FROM_EX) {
-      alignedX += firstGene[i-1];
-      alignedY += '-';
-      currentState = traceX[i][j];
-      i--;
-    } else if (currentState == FROM_EY) {
-      alignedX += '-';
-      alignedY += secondGene[j-1];
-      currentState = traceY[i][j];
-      j--;
-    } else {
-     // std::cout << "ERROR: BACK TRACE" << std::endl;
-    }
-    if (i <= 0 && j <= 0) {
-      break;
-    }
-  }
-  
-  reverse(alignedX.begin(), alignedX.end());
-  reverse(alignedY.begin(), alignedY.end());
-
+void HMMAlign::printSolution() {
   for (int i = 0; i < alignedX.size(); i = i + 100) {
     std::cout << std::string(alignedX, i, 100) << std::endl;
     std::cout << std::string(alignedY, i, 100) << std::endl;
     std::cout << "\n\n";
   }
-
-  //std::cout << alignedX << std::endl;
-  //std::cout << alignedY << std::endl;
 }
+
+void HMMAlign::run() {
+  dataPreprocessing();
+  viterbi_log();
+  backtrace();
+  printSolution();
+}
+
+
