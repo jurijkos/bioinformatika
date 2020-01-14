@@ -13,7 +13,7 @@ pip3 install biopython
 sudo pip3 install numpy
 ```
 
-##Instalation and usage
+## Instalation and usage
 Clone git repository:
 ```
 git clone https://github.com/jurijkos/bioinformatika
